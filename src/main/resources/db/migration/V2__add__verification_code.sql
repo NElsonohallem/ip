@@ -1,0 +1,2 @@
+ALTER TABLE users ADD COLUMN verification_code VARCHAR(10);
+ALTER TABLE users ADD COLUMN verification_code_expires_at TIMESTAMP;
