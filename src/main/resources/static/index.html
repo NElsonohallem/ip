@@ -1905,8 +1905,11 @@
 </div>
 
 <script>
-  const base = "http://localhost:8080";
-  const API = "http://localhost:8080/api";
+  const base = window.location.hostname === "localhost"
+      ? "http://localhost:8080"
+      : window.location.origin;
+
+  const API = base + "/api";
   const viewShared = document.getElementById("viewShared");
   if (viewShared) viewShared.classList.add("hidden");
 
