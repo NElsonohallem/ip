@@ -3322,7 +3322,7 @@
     if (metricOther) metricOther.textContent = others;
     if (metricPending) metricPending.textContent = pendingCount;
 
-    const limitMb = 60 * 1024;
+    const limitMb = 5 * 1024;
     const percent = Math.min((usedMb / limitMb) * 100, 100);
 
     if (storageBarFill) storageBarFill.style.width = percent + "%";

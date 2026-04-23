@@ -53,7 +53,7 @@ public class FileService {
         .mapToLong(FileRecord::getSizeBytes)
         .sum();
 
-    long maxBytes = 60L * 1024 * 1024 * 1024; // 60 GB
+    long maxBytes = 5L * 1024 * 1024 * 1024; // 5 GB
 
     if (usedBytes + file.getSize() > maxBytes) {
       throw new IllegalArgumentException("Storage quota exceeded. Max allowed is 60 GB.");
