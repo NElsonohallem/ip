@@ -49,6 +49,16 @@ public class FileService {
   public FileRecord upload(User owner, MultipartFile file) throws Exception {
     validateUpload(file);
 
+    long usedBytes = repo.findByOwner(owner).stream()
+        .mapToLong(FileRecord::getSizeBytes)
+        .sum();
+
+    long maxBytes = 60L * 1024 * 1024 * 1024; // 60 GB
+
+    if (usedBytes + file.getSize() > maxBytes) {
+      throw new IllegalArgumentException("Storage quota exceeded. Max allowed is 60 GB.");
+    }
+
     long totalStart = System.nanoTime();
     String originalFilename = safeOriginalFilename(file.getOriginalFilename());
 
