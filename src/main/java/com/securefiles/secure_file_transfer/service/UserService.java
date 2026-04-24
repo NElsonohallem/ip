@@ -18,7 +18,7 @@ public class UserService {
     this.verificationService = verificationService;
   }
 
-  public User register(String username, String email, String rawPassword) {
+  public User register(String username, String email, String rawPassword) throws Exception {
     if (repo.existsByUsername(username)) throw new IllegalArgumentException("Username already taken");
     if (repo.existsByEmail(email)) throw new IllegalArgumentException("Email already registered");
 
