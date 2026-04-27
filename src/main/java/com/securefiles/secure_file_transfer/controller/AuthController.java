@@ -74,9 +74,12 @@ public class AuthController {
   public ResponseEntity<?> verifyCode(@RequestBody VerifyCodeReq req) {
     try {
       verificationService.verifyCode(req.email(), req.code());
-      return ResponseEntity.ok("Email verified. You can now login.");
+      return ResponseEntity.ok("Email verified successfully");
     } catch (IllegalArgumentException e) {
       return ResponseEntity.badRequest().body(e.getMessage());
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.internalServerError().body("Verification failed: " + e.getMessage());
     }
   }
 
