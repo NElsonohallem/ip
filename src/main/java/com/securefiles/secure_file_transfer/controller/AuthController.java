@@ -119,7 +119,7 @@ public class AuthController {
   public ResponseEntity<?> deleteAccount(@RequestBody DeleteAccountReq req) {
     try {
       String username = SecurityContextHolder.getContext().getAuthentication().getName();
-      accountService.deleteMyAccount(username, req.passwordConfirm());
+      accountService.deleteAccountAndWipeStorage(username, req.passwordConfirm());
       return ResponseEntity.ok("Account deleted.");
     } catch (IllegalArgumentException e) {
       return ResponseEntity.badRequest().body(e.getMessage());
