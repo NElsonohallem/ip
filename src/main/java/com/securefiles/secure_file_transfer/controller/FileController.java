@@ -35,20 +35,21 @@ public class FileController {
   private final UserRepository userRepo;
   private final FileRecordRepository fileRepo;
   private final ActivityService activityService;
-  private FileShareLinkService linkService;
+  private final FileShareLinkService linkService;
 
   public FileController(
       FileService fileService,
       FileAccessService fileAccessService,
       UserRepository userRepo,
       FileRecordRepository fileRepo,
-      ActivityService activityService
+      ActivityService activityService, FileShareLinkService linkService
   ) {
     this.fileService = fileService;
     this.fileAccessService = fileAccessService;
     this.userRepo = userRepo;
     this.fileRepo = fileRepo;
     this.activityService = activityService;
+    this.linkService = linkService;
   }
 
   private String currentUsername() {
@@ -192,5 +193,42 @@ public class FileController {
         usedMb
     ));
 
+  }
+  @GetMapping("/download/{id}")
+  public void downloadFile(@PathVariable Long id, HttpServletResponse response) throws Exception {
+    String username = currentUsername();
+
+    User owner = userRepo.findByUsername(username)
+        .orElseThrow(() -> new IllegalArgumentException("Unknown user"));
+
+    FileRecord rec = fileRepo.findByIdAndOwner(id, owner)
+        .orElseThrow(() -> new IllegalArgumentException("File not found"));
+
+    if (!fileService.hasReplicaAvailable(rec)) {
+      response.reset();
+      response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+      response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+      response.getWriter().write("{\"message\":\"Encrypted file missing on server\"}");
+      return;
+    }
+
+    String filename = rec.getOriginalFilename();
+    String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8)
+        .replace("+", "%20");
+
+    response.setContentType(
+        rec.getContentType() != null ? rec.getContentType() : MediaType.APPLICATION_OCTET_STREAM_VALUE
+    );
+
+    response.setHeader(
+        HttpHeaders.CONTENT_DISPOSITION,
+        "attachment; filename*=UTF-8''" + encodedFilename
+    );
+
+    if (rec.getSizeBytes() > 0) {
+      response.setContentLengthLong(rec.getSizeBytes());
+    }
+
+    fileService.streamDecryptedFile(rec, response.getOutputStream());
   }
 }

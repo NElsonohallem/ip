@@ -1334,6 +1334,57 @@
         grid-template-columns:1fr;
       }
     }
+
+    .appToast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+
+      min-width: 280px;
+      max-width: 90%;
+      padding: 16px 24px;
+
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+
+      display: none;
+      animation: slideDown 0.3s ease;
+    }
+
+    /* Success */
+    .appToast.ok {
+      background: #22c55e;
+      color: white;
+    }
+
+    /* Error */
+    .appToast.err {
+      background: #ef4444;
+      color: white;
+    }
+
+    /* Warning */
+    .appToast.warn {
+      background: #f59e0b;
+      color: white;
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translate(-50%, -20px);
+        opacity: 0;
+      }
+      to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1937,20 +1988,24 @@
     if (ov) ov.style.display = "none";
   }
 
-  function toast(msg, type = "ok", ms = 2400) {
-    const wrap = document.getElementById("toastWrap");
-    if (!wrap) return;
-    const el = document.createElement("div");
-    el.className = `toast ${type}`;
-    el.innerHTML = `<span class="ticon"></span><div>${escapeHtml(msg)}</div>`;
-    wrap.appendChild(el);
-    setTimeout(() => {
-      el.style.opacity = "0";
-      el.style.transform = "translateY(4px)";
-    }, Math.max(0, ms - 250));
-    setTimeout(() => el.remove(), ms);
-  }
+  function toast(message, type = "ok") {
+    let el = document.getElementById("appToast");
 
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "appToast";
+      document.body.appendChild(el);
+    }
+
+    el.className = "appToast " + type;
+    el.innerText = message;
+
+    el.style.display = "block";
+
+    setTimeout(() => {
+      el.style.display = "none";
+    }, 4000);
+  }
   function mbOrGb(mb) {
     const num = Number(mb || 0);
     if (num < 1024) return `${num.toFixed(2)} MB`;
@@ -2136,7 +2191,7 @@
   let lastFilesCache = [];
   let uploadQueue = [];
   let uploadInProgress = false;
-  let currentGeneratedShareLink = "";
+  let currentGeneratedShareLink = base + "/shared/" + data.token;
   let currentGeneratedShareMeta = null;
 
   function maskToken(token) {
@@ -3660,7 +3715,7 @@
     if (!body || !modal) return;
 
     const lower = (filename || "").toLowerCase();
-    const fileUrl = base + "/api/files/download/" + encodeURIComponent(id);
+    const fileUrl = base + "/api/files/preview/" + encodeURIComponent(id);
 
     body.innerHTML = `<div class="emptyState">Loading preview...</div>`;
     modal.classList.remove("hidden");
