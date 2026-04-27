@@ -22,7 +22,6 @@ public class AppUserDetailsService implements UserDetailsService {
     var u = users.findByUsername(username)
         .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-    // If you don't store roles yet, just give everyone ROLE_USER
     return new org.springframework.security.core.userdetails.User(
         u.getUsername(),
         u.getPasswordHash(),

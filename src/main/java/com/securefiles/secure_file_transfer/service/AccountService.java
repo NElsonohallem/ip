@@ -3,15 +3,14 @@ package com.securefiles.secure_file_transfer.service;
 import com.securefiles.secure_file_transfer.model.FileRecord;
 import com.securefiles.secure_file_transfer.model.User;
 import com.securefiles.secure_file_transfer.repository.FileRecordRepository;
-import com.securefiles.secure_file_transfer.repository.ShareRequestRepository;
 import com.securefiles.secure_file_transfer.repository.UserRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 @Service
@@ -19,52 +18,58 @@ public class AccountService {
 
   private final UserRepository userRepo;
   private final FileRecordRepository fileRepo;
-  private final ShareRequestRepository shareRepo;
   private final PasswordEncoder passwordEncoder;
 
-  @Value("${app.storage.dir:storage}")
-  private String storageDir;
+  private final String storageBaseDir = "storage";
 
   public AccountService(
       UserRepository userRepo,
       FileRecordRepository fileRepo,
-      ShareRequestRepository shareRepo,
       PasswordEncoder passwordEncoder
   ) {
     this.userRepo = userRepo;
     this.fileRepo = fileRepo;
-    this.shareRepo = shareRepo;
     this.passwordEncoder = passwordEncoder;
   }
 
   @Transactional
-  public void deleteMyAccount(String username, String passwordConfirm) {
-    User me = userRepo.findByUsername(username)
-        .orElseThrow(() -> new IllegalArgumentException("Unknown user"));
+  public void deleteAccountAndWipeStorage(String username, String rawPassword) {
+    User user = userRepo.findByUsername(username)
+        .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-    // ✅ confirm password (IMPORTANT)
-    // Change getPassword() if your field is named differently
-    if (!passwordEncoder.matches(passwordConfirm, me.getPasswordHash())) {
-      throw new IllegalArgumentException("Wrong password.");
+    if (rawPassword == null || !passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
+      throw new IllegalArgumentException("Incorrect password");
     }
 
-    // 1) delete share requests involving me (incoming/outgoing)
-    shareRepo.deleteByFromUserOrToUser(me, me);
+    List<FileRecord> files = fileRepo.findByOwner(user);
 
-    // 2) delete share requests tied to my files (safety)
-    shareRepo.deleteByFile_Owner(me);
-
-    // 3) delete encrypted files from disk + db rows
-    List<FileRecord> myFiles = fileRepo.findByOwner(me);
-    for (FileRecord f : myFiles) {
-      try {
-        Path p = Path.of(storageDir).resolve(f.getStoredFilename());
-        Files.deleteIfExists(p);
-      } catch (Exception ignored) {}
+    for (FileRecord file : files) {
+      deletePhysicalReplicas(file);
     }
-    fileRepo.deleteByOwner(me);
 
-    // 4) finally delete the user
-    userRepo.delete(me);
+    fileRepo.deleteByOwner(user);
+    userRepo.delete(user);
+  }
+
+  private void deletePhysicalReplicas(FileRecord file) {
+    if (file.getStoredFilename() == null) return;
+
+    String nodes = file.getReplicaNodes();
+
+    if (nodes == null || nodes.isBlank()) {
+      deleteOne(Paths.get(storageBaseDir, file.getStoredFilename()));
+      return;
+    }
+
+    for (String node : nodes.split(",")) {
+      deleteOne(Paths.get(storageBaseDir, node.trim(), file.getStoredFilename()));
+    }
+  }
+
+  private void deleteOne(Path path) {
+    try {
+      Files.deleteIfExists(path);
+    } catch (Exception ignored) {
+    }
   }
 }
