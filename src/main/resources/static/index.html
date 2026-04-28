@@ -1335,6 +1335,18 @@
       }
     }
 
+    .shareModal {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .shareModal.hidden {
+      display: none !important;
+    }
     .appToast {
       position: fixed;
       top: 20px;
@@ -4422,6 +4434,12 @@
     selectedShareFilename = filename || "file";
 
     const modal = document.getElementById("createLinkModal");
+
+    if (!modal) {
+      alert("Modal not found");
+      return;
+    }
+
     const nameInput = document.getElementById("createLinkFileName");
     const expiryInput = document.getElementById("createLinkExpiry");
     const maxInput = document.getElementById("createLinkMaxDownloads");
@@ -4431,12 +4449,13 @@
     const dt = new Date();
     dt.setDate(dt.getDate() + 7);
     dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
+
     if (expiryInput) expiryInput.value = dt.toISOString().slice(0, 16);
-
     if (maxInput) maxInput.value = 10;
-    if (modal) modal.classList.remove("hidden");
-  }
 
+    modal.classList.remove("hidden");
+    modal.style.display = "flex";
+  }
   function closeCreateLinkModal() {
     const modal = document.getElementById("createLinkModal");
     if (modal) modal.classList.add("hidden");
