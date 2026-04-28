@@ -2283,7 +2283,7 @@
   }
 
   function navigate(path) {
-    history.pushState({}, "", path);
+    window.location.hash = path;
     route();
   }
 
@@ -2432,7 +2432,7 @@
     hideAllViews();
 
     const url = new URL(window.location.href);
-    const path = url.pathname;
+    const path = window.location.hash ? window.location.hash.substring(1) : "/";
     const tab = url.searchParams.get("tab") || "files";
 
     const mainTopbar = document.querySelector(".topbar");
