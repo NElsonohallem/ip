@@ -3496,13 +3496,15 @@
 
     try {
       showLoading("Deleting account...");
-      const res = await fetchWithAuth(base + "/api/users/me", {
+      const res = await fetchWithAuth(API + "/auth/delete-account", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
           ...authHeaders()
         },
-        body: JSON.stringify({ password })
+        body: JSON.stringify({
+          passwordConfirm: password
+        })
       });
 
       const txt = await res.text();
