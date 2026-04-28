@@ -10,7 +10,6 @@ import com.securefiles.secure_file_transfer.service.VerificationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import com.securefiles.secure_file_transfer.dto.VerifyCodeReq;
 
 @RestController
 @RequestMapping("/api/auth")
