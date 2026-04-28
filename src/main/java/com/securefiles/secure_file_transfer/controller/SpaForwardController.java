@@ -6,9 +6,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class SpaForwardController {
 
-  // Frontend routes -> serve index.html so the JS router can take over
-  @GetMapping({"/login", "/dashboard", "/profile"})
-  public String forwardSpaRoutes() {
+  @GetMapping({
+      "/",
+      "/login",
+      "/register",
+      "/forgot",
+      "/verify",
+      "/profile",
+      "/dashboard",
+      "/shared/{token}"
+  })
+  public String forward() {
     return "forward:/index.html";
   }
 }
