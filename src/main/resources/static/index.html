@@ -1008,6 +1008,7 @@
       white-space:nowrap;
     }
 
+
     #viewAuth, #viewDashboard, #viewProfile, #viewVerify {
       margin: 18px auto;
     }
@@ -1904,7 +1905,7 @@
         <div id="verifyMsg" class="msg"></div>
 
         <div class="inlineRow" style="margin-top:12px;">
-          <button class="btn" type="submit" style="flex:1;">Verify</button>
+          <button class="btn" type="button" style="flex:1;" onclick="verifyEmailCode()">Verify</button>
           <button class="btn secondary" type="button" style="flex:1;" onclick="navigate('/login')">Back to login</button>
         </div>
 
@@ -2274,6 +2275,42 @@
     return res;
   }
 
+  async function verifyEmailCode() {
+    const email = document.getElementById("verifyEmail").value.trim();
+    const code = document.getElementById("verifyCode").value.trim();
+
+    if (!/^\d{6}$/.test(code)) {
+      toast("Code must be exactly 6 digits.", "warn");
+      return;
+    }
+
+    try {
+      showLoading("Verifying code…");
+
+      const res = await fetch(API + "/auth/verify-code", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ email, code })
+      });
+
+      const text = await res.text();
+      hideLoading();
+
+      if (!res.ok) {
+        toast(text || "Verification failed", "err");
+        return;
+      }
+
+      toast("Email verified successfully ✅", "ok");
+      setTimeout(() => navigate("/login"), 800);
+
+    } catch (err) {
+      hideLoading();
+      console.error(err);
+      toast("Verification failed. Try again.", "err");
+    }
+  }
+
   function setLastEmail(email) {
     localStorage.setItem("lastEmail", email || "");
   }
@@ -2283,7 +2320,7 @@
   }
 
   function navigate(path) {
-    window.location.hash = path;
+    history.pushState({}, "", path);
     route();
   }
 
@@ -2432,7 +2469,7 @@
     hideAllViews();
 
     const url = new URL(window.location.href);
-    const path = window.location.hash ? window.location.hash.substring(1) : "/";
+    const path = url.pathname;
     const tab = url.searchParams.get("tab") || "files";
 
     const mainTopbar = document.querySelector(".topbar");
