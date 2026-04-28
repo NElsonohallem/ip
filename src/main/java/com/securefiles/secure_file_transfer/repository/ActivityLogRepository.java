@@ -7,5 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> {
+   void deleteByUser(User user);
   List<ActivityLog> findTop10ByUserOrderByCreatedAtDesc(User user);
 }

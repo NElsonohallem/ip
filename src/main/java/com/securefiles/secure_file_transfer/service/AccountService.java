@@ -2,6 +2,7 @@ package com.securefiles.secure_file_transfer.service;
 
 import com.securefiles.secure_file_transfer.model.FileRecord;
 import com.securefiles.secure_file_transfer.model.User;
+import com.securefiles.secure_file_transfer.repository.ActivityLogRepository;
 import com.securefiles.secure_file_transfer.repository.FileRecordRepository;
 import com.securefiles.secure_file_transfer.repository.FileShareLinkRepository;
 import com.securefiles.secure_file_transfer.repository.UserRepository;
@@ -23,16 +24,19 @@ public class AccountService {
   private final PasswordEncoder passwordEncoder;
   private final FileShareLinkRepository shareLinkRepo;
   private final String storageBaseDir = "storage";
+  private final ActivityLogRepository activityRepo;
 
   public AccountService(
       UserRepository userRepo,
       FileRecordRepository fileRepo,
-      PasswordEncoder passwordEncoder, FileShareLinkRepository shareLinkRepo
+      PasswordEncoder passwordEncoder, FileShareLinkRepository shareLinkRepo,
+      ActivityLogRepository activityRepo
   ) {
     this.userRepo = userRepo;
     this.fileRepo = fileRepo;
     this.passwordEncoder = passwordEncoder;
     this.shareLinkRepo = shareLinkRepo;
+    this.activityRepo = activityRepo;
   }
 
   @Transactional
@@ -52,6 +56,7 @@ public class AccountService {
     }
 
     fileRepo.deleteByOwner(user);
+    activityRepo.deleteByUser(user);
     userRepo.delete(user);
   }
 
