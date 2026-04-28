@@ -3743,8 +3743,6 @@
     }
   }
 
-
-
   function cancelUpload(id) {
     const item = uploadQueue.find(f => f.id === id);
     if (item && item.xhr) {
@@ -4033,7 +4031,7 @@
           <td>
             <div class="tActions">
               <button class="miniBtn" onclick="downloadFile(${f.id})">⬇ Download</button>
-              <button class="miniBtn" onclick='testCreateLinkClick(${f.id}, ${JSON.stringify(f.filename)})'>🔗 Create Link</button>
+              <button class="miniBtn" onclick='openCreateLinkModal(${f.id}, ${JSON.stringify(f.filename)})'>🔗 Create Link</button>
               <button class="miniBtn" onclick='deleteFile(${f.id}, ${JSON.stringify(f.filename)})'>🗑 Delete</button>
               <button class="miniBtn" onclick='previewFile(${f.id}, ${JSON.stringify(f.filename)})'>👁 Preview</button>
             </div>
