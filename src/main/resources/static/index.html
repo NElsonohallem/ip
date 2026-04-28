@@ -4515,9 +4515,9 @@
 
       const data = JSON.parse(txt);
 
-      currentGeneratedShareLink = data.url
-          ? (data.url.startsWith("http") ? data.url : base + data.url)
-          : base + "/shared/" + data.token;
+      const token = data.token || data.shareToken || data.url?.split("/shared/")[1];
+
+      currentGeneratedShareLink = base + "/shared/" + token;
 
       currentGeneratedShareMeta = data;
 
