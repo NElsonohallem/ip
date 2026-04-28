@@ -2203,7 +2203,7 @@
   let lastFilesCache = [];
   let uploadQueue = [];
   let uploadInProgress = false;
-  let currentGeneratedShareLink = base + "/shared/" + data.token;
+  let currentGeneratedShareLink = "";
   let currentGeneratedShareMeta = null;
 
   function maskToken(token) {
@@ -4514,7 +4514,11 @@
       }
 
       const data = JSON.parse(txt);
-      currentGeneratedShareLink = data.url;
+
+      currentGeneratedShareLink = data.url
+          ? (data.url.startsWith("http") ? data.url : base + data.url)
+          : base + "/shared/" + data.token;
+
       currentGeneratedShareMeta = data;
 
       closeCreateLinkModal();
