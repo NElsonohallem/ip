@@ -3,10 +3,12 @@ package com.securefiles.secure_file_transfer.service;
 import com.securefiles.secure_file_transfer.model.FileRecord;
 import com.securefiles.secure_file_transfer.model.User;
 import com.securefiles.secure_file_transfer.repository.FileRecordRepository;
+import com.securefiles.secure_file_transfer.repository.FileShareLinkRepository;
 import com.securefiles.secure_file_transfer.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,17 +21,18 @@ public class AccountService {
   private final UserRepository userRepo;
   private final FileRecordRepository fileRepo;
   private final PasswordEncoder passwordEncoder;
-
+  private final FileShareLinkRepository shareLinkRepo;
   private final String storageBaseDir = "storage";
 
   public AccountService(
       UserRepository userRepo,
       FileRecordRepository fileRepo,
-      PasswordEncoder passwordEncoder
+      PasswordEncoder passwordEncoder, FileShareLinkRepository shareLinkRepo
   ) {
     this.userRepo = userRepo;
     this.fileRepo = fileRepo;
     this.passwordEncoder = passwordEncoder;
+    this.shareLinkRepo = shareLinkRepo;
   }
 
   @Transactional
@@ -44,6 +47,7 @@ public class AccountService {
     List<FileRecord> files = fileRepo.findByOwner(user);
 
     for (FileRecord file : files) {
+      shareLinkRepo.deleteByFile(file);
       deletePhysicalReplicas(file);
     }
 
